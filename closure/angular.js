@@ -953,16 +953,43 @@ angular.$cacheFactory;
 angular.$cacheFactory.Options;
 
 /**
+ * @template T
+ * @constructor
  * @typedef {{
  *   info: function():angular.$cacheFactory.Cache.Info,
- *   put: function(string, *),
- *   get: function(string):*,
+ *   put: function(string, T),
+ *   get: function(string):T,
  *   remove: function(string),
  *   removeAll: function(),
  *   destroy: function()
  *   }}
  */
 angular.$cacheFactory.Cache;
+
+/**
+ * @ return {angular.$cacheFactory.Cache.Info}
+ */
+Cache.prototype.info = function() {};
+
+/**
+ * @param {string} key
+ * @param {T} value
+ */
+Cache.prototype.put = function(key, value) {};
+
+/**
+ * @param {string} key
+ * @return {T}
+ */
+Cache.prototype.get = function(key) {};
+
+/**
+ * @param {string} key
+ */
+Cache.prototype.remove = function(key) {};
+
+Cache.prototype.removeAll = function() {};
+Cache.prototype.destroy = function() {};
 
 /**
  * @typedef {{
