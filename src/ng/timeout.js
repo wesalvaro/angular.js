@@ -8,9 +8,8 @@ function $TimeoutProvider() {
 
 
      /**
-      * @ngdoc function
-      * @name ng.$timeout
-      * @requires $browser
+      * @ngdoc service
+      * @name $timeout
       *
       * @description
       * Angular's wrapper for `window.setTimeout`. The `fn` function is wrapped into a try/catch
@@ -28,10 +27,10 @@ function $TimeoutProvider() {
       * @param {function()} fn A function, whose execution should be delayed.
       * @param {number=} [delay=0] Delay in milliseconds.
       * @param {boolean=} [invokeApply=true] If set to `false` skips model dirty checking, otherwise
-      *   will invoke `fn` within the {@link ng.$rootScope.Scope#methods_$apply $apply} block.
+      *   will invoke `fn` within the {@link ng.$rootScope.Scope#$apply $apply} block.
       * @returns {Promise} Promise that will be resolved when the timeout is reached. The value this
       *   promise will be resolved with is the return value of the `fn` function.
-      * 
+      *
       */
     function timeout(fn, delay, invokeApply) {
       var deferred = $q.defer(),
@@ -61,9 +60,8 @@ function $TimeoutProvider() {
 
 
      /**
-      * @ngdoc function
-      * @name ng.$timeout#cancel
-      * @methodOf ng.$timeout
+      * @ngdoc method
+      * @name $timeout#cancel
       *
       * @description
       * Cancels a task associated with the `promise`. As a result of this, the promise will be

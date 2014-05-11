@@ -204,13 +204,13 @@ describe('ngIf and transcludes', function() {
 describe('ngIf animations', function () {
   var body, element, $rootElement;
 
-  function html(html) {
-    $rootElement.html(html);
+  function html(content) {
+    $rootElement.html(content);
     element = $rootElement.children().eq(0);
     return element;
   }
 
-  beforeEach(module('mock.animate'));
+  beforeEach(module('ngAnimateMock'));
 
   beforeEach(module(function() {
     // we need to run animation on attached elements;
@@ -245,11 +245,13 @@ describe('ngIf animations', function () {
       $rootScope.$digest();
       $scope.$apply('value = true');
 
-      item = $animate.flushNext('enter').element;
-      expect(item.text()).toBe('Hi');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
+      expect(item.element.text()).toBe('Hi');
 
       expect(element.children().length).toBe(1);
-  }));
+    })
+  );
 
   it('should fire off the leave animation',
     inject(function ($compile, $rootScope, $animate) {
@@ -262,16 +264,57 @@ describe('ngIf animations', function () {
       ))($scope);
       $scope.$apply('value = true');
 
-      item = $animate.flushNext('enter').element;
-      expect(item.text()).toBe('Hi');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
+      expect(item.element.text()).toBe('Hi');
 
-      $scope.$apply('value = false');
       expect(element.children().length).toBe(1);
+      $scope.$apply('value = false');
 
-      item = $animate.flushNext('leave').element;
-      expect(item.text()).toBe('Hi');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('leave');
+      expect(item.element.text()).toBe('Hi');
 
       expect(element.children().length).toBe(0);
-  }));
+    })
+  );
+
+  it('should destroy the previous leave animation if a new one takes place', function() {
+    module(function($provide) {
+      $provide.value('$animate', {
+        enabled : function() { return true; },
+        leave : function() {
+          //DOM operation left blank
+        },
+        enter : function(element, parent) {
+          parent.append(element);
+        }
+      });
+    });
+    inject(function ($compile, $rootScope, $animate) {
+      var item;
+      var $scope = $rootScope.$new();
+      element = $compile(html(
+        '<div>' +
+          '<div ng-if="value">Yo</div>' +
+        '</div>'
+      ))($scope);
+
+      $scope.$apply('value = true');
+
+      var destroyed, inner = element.children(0);
+      inner.on('$destroy', function() {
+        destroyed = true;
+      });
+
+      $scope.$apply('value = false');
+
+      $scope.$apply('value = true');
+
+      $scope.$apply('value = false');
+
+      expect(destroyed).toBe(true);
+    });
+  });
 
 });

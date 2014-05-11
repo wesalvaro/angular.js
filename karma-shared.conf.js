@@ -32,7 +32,8 @@ module.exports = function(config, specificOptions) {
     customLaunchers: {
       'SL_Chrome': {
         base: 'SauceLabs',
-        browserName: 'chrome'
+        browserName: 'chrome',
+        version: '34'
       },
       'SL_Firefox': {
         base: 'SauceLabs',
@@ -44,12 +45,6 @@ module.exports = function(config, specificOptions) {
         browserName: 'safari',
         platform: 'OS X 10.9',
         version: '7'
-      },
-      'SL_IE_8': {
-        base: 'SauceLabs',
-        browserName: 'internet explorer',
-        platform: 'Windows 7',
-        version: '8'
       },
       'SL_IE_9': {
         base: 'SauceLabs',
@@ -88,13 +83,6 @@ module.exports = function(config, specificOptions) {
         os: 'Windows',
         os_version: '8'
       },
-      'BS_IE_8': {
-        base: 'BrowserStack',
-        browser: 'ie',
-        browser_version: '8.0',
-        os: 'Windows',
-        os_version: '7'
-      },
       'BS_IE_9': {
         base: 'BrowserStack',
         browser: 'ie',
@@ -125,6 +113,7 @@ module.exports = function(config, specificOptions) {
 
     config.logLevel = config.LOG_DEBUG;
     config.transports = ['websocket', 'xhr-polling'];
+    config.captureTimeout = 0; // rely on SL timeout
 
     config.browserStack.build = buildLabel;
     config.browserStack.startTunnel = false;

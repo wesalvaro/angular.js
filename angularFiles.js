@@ -11,6 +11,7 @@ angularFiles = {
 
     'src/ng/anchorScroll.js',
     'src/ng/animate.js',
+    'src/ng/asyncCallback.js',
     'src/ng/browser.js',
     'src/ng/cacheFactory.js',
     'src/ng/compile.js',
@@ -26,6 +27,7 @@ angularFiles = {
     'src/ng/log.js',
     'src/ng/parse.js',
     'src/ng/q.js',
+    'src/ng/raf.js',
     'src/ng/rootScope.js',
     'src/ng/sanitizeUri.js',
     'src/ng/sce.js',
@@ -78,6 +80,9 @@ angularFiles = {
     'ngCookies': [
       'src/ngCookies/cookies.js'
     ],
+    'ngMessages': [
+      'src/ngMessages/messages.js'
+    ],
     'ngResource': [
       'src/ngResource/resource.js'
     ],
@@ -126,6 +131,7 @@ angularFiles = {
     'test/auto/*.js',
     'test/ng/**/*.js',
     'test/ngAnimate/*.js',
+    'test/ngMessages/*.js',
     'test/ngCookies/*.js',
     'test/ngResource/*.js',
     'test/ngRoute/**/*.js',
@@ -142,8 +148,6 @@ angularFiles = {
     '@angularSrcModules',
     '@angularScenario',
     '@angularTest',
-    'example/personalLog/*.js',
-    'example/personalLog/test/*.js'
   ],
 
   'karmaExclude': [
@@ -178,9 +182,6 @@ angularFiles = {
     '@angularSrcModules',
     '@angularScenario',
     '@angularTest',
-    'example/personalLog/*.js',
-
-    'example/personalLog/test/*.js'
   ],
 
   'karmaJqueryExclude': [
@@ -192,6 +193,7 @@ angularFiles = {
 
 angularFiles['angularSrcModules'] = [].concat(
   angularFiles['angularModules']['ngAnimate'],
+  angularFiles['angularModules']['ngMessages'],
   angularFiles['angularModules']['ngCookies'],
   angularFiles['angularModules']['ngResource'],
   angularFiles['angularModules']['ngRoute'],

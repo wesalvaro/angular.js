@@ -1,3 +1,6 @@
+/* global createHttpBackend: false, createMockXhr: false, MockXhr: false */
+'use strict';
+
 describe('$httpBackend', function() {
 
   var $backend, $browser, callbacks,
@@ -39,7 +42,8 @@ describe('$httpBackend', function() {
     fakeDocument = {
       $$scripts: [],
       createElement: jasmine.createSpy('createElement').andCallFake(function() {
-        return {};
+        // Return a proper script element...
+        return document.createElement(arguments[0]);
       }),
       body: {
         appendChild: jasmine.createSpy('body.appendChild').andCallFake(function(script) {
@@ -74,6 +78,32 @@ describe('$httpBackend', function() {
 
     expect(xhr.$$data).toBe(null);
   });
+
+  it('should call completion function with xhr.statusText if present', function() {
+    callback.andCallFake(function(status, response, headers, statusText) {
+      expect(statusText).toBe('OK');
+    });
+
+    $backend('GET', '/some-url', null, callback);
+    xhr = MockXhr.$$lastInstance;
+    xhr.statusText = 'OK';
+    xhr.readyState = 4;
+    xhr.onreadystatechange();
+    expect(callback).toHaveBeenCalledOnce();
+  });
+
+  it('should call completion function with empty string if not present', function() {
+    callback.andCallFake(function(status, response, headers, statusText) {
+      expect(statusText).toBe('');
+    });
+
+    $backend('GET', '/some-url', null, callback);
+    xhr = MockXhr.$$lastInstance;
+    xhr.readyState = 4;
+    xhr.onreadystatechange();
+    expect(callback).toHaveBeenCalledOnce();
+  });
+
 
   it('should normalize IE\'s 1223 status code into 204', function() {
     callback.andCallFake(function(status) {
@@ -252,7 +282,7 @@ describe('$httpBackend', function() {
       expect(response).toBe('response');
     });
 
-    $backend = createHttpBackend($browser, function() { return new SyncXhr() });
+    $backend = createHttpBackend($browser, function() { return new SyncXhr(); });
     $backend('GET', '/url', null, callback);
     expect(callback).toHaveBeenCalledOnce();
   });
@@ -325,13 +355,7 @@ describe('$httpBackend', function() {
 
       expect(url[1]).toBe('http://example.org/path');
       callbacks[url[2]]('some-data');
-
-      if (script.onreadystatechange) {
-        script.readyState = 'complete';
-        script.onreadystatechange();
-      } else {
-        script.onload();
-      }
+      browserTrigger(script, "load");
 
       expect(callback).toHaveBeenCalledOnce();
     });
@@ -346,68 +370,10 @@ describe('$httpBackend', function() {
           callbackId = script.src.match(SCRIPT_URL)[2];
 
       callbacks[callbackId]('some-data');
-
-      if (script.onreadystatechange) {
-        script.readyState = 'complete';
-        script.onreadystatechange();
-      } else {
-        script.onload();
-      }
+      browserTrigger(script, "load");
 
       expect(callbacks[callbackId]).toBe(angular.noop);
       expect(fakeDocument.body.removeChild).toHaveBeenCalledOnceWith(script);
-    });
-
-
-    if(msie<=8) {
-
-      it('should attach onreadystatechange handler to the script object', function() {
-        $backend('JSONP', 'http://example.org/path?cb=JSON_CALLBACK', null, noop);
-
-        expect(fakeDocument.$$scripts[0].onreadystatechange).toEqual(jasmine.any(Function));
-
-        var script = fakeDocument.$$scripts[0];
-
-        script.readyState = 'complete';
-        script.onreadystatechange();
-
-        expect(script.onreadystatechange).toBe(null);
-      });
-
-    } else {
-
-      it('should attach onload and onerror handlers to the script object', function() {
-        $backend('JSONP', 'http://example.org/path?cb=JSON_CALLBACK', null, noop);
-
-        expect(fakeDocument.$$scripts[0].onload).toEqual(jasmine.any(Function));
-        expect(fakeDocument.$$scripts[0].onerror).toEqual(jasmine.any(Function));
-
-        var script = fakeDocument.$$scripts[0];
-        script.onload();
-
-        expect(script.onload).toBe(null);
-        expect(script.onerror).toBe(null);
-      });
-
-    }
-
-    it('should call callback with status -2 when script fails to load', function() {
-      callback.andCallFake(function(status, response) {
-        expect(status).toBe(-2);
-        expect(response).toBeUndefined();
-      });
-
-      $backend('JSONP', 'http://example.org/path?cb=JSON_CALLBACK', null, callback);
-      expect(fakeDocument.$$scripts.length).toBe(1);
-
-      var script = fakeDocument.$$scripts.shift();
-      if (script.onreadystatechange) {
-        script.readyState = 'complete';
-        script.onreadystatechange();
-      } else {
-        script.onload();
-      }
-      expect(callback).toHaveBeenCalledOnce();
     });
 
 
@@ -456,7 +422,17 @@ describe('$httpBackend', function() {
     }
 
 
-    it('should convert 0 to 200 if content', function() {
+    it('should convert 0 to 200 if content and file protocol', function() {
+      $backend = createHttpBackend($browser, createMockXhr);
+
+      $backend('GET', 'file:///whatever/index.html', null, callback);
+      respond(0, 'SOME CONTENT');
+
+      expect(callback).toHaveBeenCalled();
+      expect(callback.mostRecentCall.args[0]).toBe(200);
+    });
+
+    it('should convert 0 to 200 if content for protocols other than file', function() {
       $backend = createHttpBackend($browser, createMockXhr);
 
       $backend('GET', 'someProtocol:///whatever/index.html', null, callback);
@@ -466,19 +442,28 @@ describe('$httpBackend', function() {
       expect(callback.mostRecentCall.args[0]).toBe(200);
     });
 
-
-    it('should convert 0 to 404 if no content', function() {
+    it('should convert 0 to 404 if no content and file protocol', function() {
       $backend = createHttpBackend($browser, createMockXhr);
 
-      $backend('GET', 'someProtocol:///whatever/index.html', null, callback);
+      $backend('GET', 'file:///whatever/index.html', null, callback);
       respond(0, '');
 
       expect(callback).toHaveBeenCalled();
       expect(callback.mostRecentCall.args[0]).toBe(404);
     });
 
+    it('should not convert 0 to 404 if no content for protocols other than file', function() {
+      $backend = createHttpBackend($browser, createMockXhr);
+
+      $backend('GET', 'someProtocol:///whatever/index.html', null, callback);
+      respond(0, '');
+
+      expect(callback).toHaveBeenCalled();
+      expect(callback.mostRecentCall.args[0]).toBe(0);
+    });
 
     it('should convert 0 to 404 if no content - relative url', function() {
+      /* global urlParsingNode: true */
       var originalUrlParsingNode = urlParsingNode;
 
       //temporarily overriding the DOM element to pretend that the test runs origin with file:// protocol
@@ -486,10 +471,10 @@ describe('$httpBackend', function() {
         hash : "#/C:/",
         host : "",
         hostname : "",
-        href : "someProtocol:///C:/base#!/C:/foo",
+        href : "file:///C:/base#!/C:/foo",
         pathname : "/C:/foo",
         port : "",
-        protocol : "someProtocol:",
+        protocol : "file:",
         search : "",
         setAttribute: angular.noop
       };

@@ -60,6 +60,28 @@ describe('Filter: filter', function() {
     expect(filter(items, {first:'misko', last:'hevery'})[0]).toEqual(items[0]);
   });
 
+
+  it('should support predicat object with dots in the name', function() {
+    var items = [{'first.name': 'misko', 'last.name': 'hevery'},
+                 {'first.name': 'adam', 'last.name': 'abrons'}];
+
+    expect(filter(items, {'first.name':'', 'last.name':''}).length).toBe(2);
+    expect(filter(items, {'first.name':'misko', 'last.name':''})).toEqual([items[0]]);
+  });
+
+
+  it('should support deep predicate objects', function() {
+    var items = [{person: {name: 'John'}},
+                 {person: {name: 'Rita'}},
+                 {person: {name: 'Billy'}},
+                 {person: {name: 'Joan'}}];
+    expect(filter(items, {person: {name: 'Jo'}}).length).toBe(2);
+    expect(filter(items, {person: {name: 'Jo'}})).toEqual([
+      {person: {name: 'John'}}, {person: {name: 'Joan'}}
+    ]);
+  });
+
+
   it('should match any properties for given "$" property', function() {
     var items = [{first: 'tom', last: 'hevery'},
                  {first: 'adam', last: 'hevery', alias: 'tom', done: false},
@@ -73,8 +95,8 @@ describe('Filter: filter', function() {
 
   it('should support boolean properties', function() {
     var items = [{name: 'tom', current: true},
-	             {name: 'demi', current: false},
-	             {name: 'sofia'}];
+               {name: 'demi', current: false},
+               {name: 'sofia'}];
 
     expect(filter(items, {current:true}).length).toBe(1);
     expect(filter(items, {current:true})[0].name).toBe('tom');
@@ -97,26 +119,26 @@ describe('Filter: filter', function() {
       expect(filter(items, expr, true)).toEqual([items[1]]);
       expect(filter(items, expr, false)).toEqual([items[1], items[2]]);
 
-      var items = [
+      items = [
         {key: 'value1', nonkey: 1},
         {key: 'value2', nonkey: 2},
         {key: 'value12', nonkey: 3},
         {key: 'value1', nonkey:4},
         {key: 'Value1', nonkey:5}
       ];
-      var expr = {key: 'value1'};
+      expr = {key: 'value1'};
       expect(filter(items, expr, true)).toEqual([items[0], items[3]]);
 
-      var items = [
+      items = [
         {key: 1, nonkey: 1},
         {key: 2, nonkey: 2},
         {key: 12, nonkey: 3},
         {key: 1, nonkey:4}
       ];
-      var expr = { key: 1 };
+      expr = { key: 1 };
       expect(filter(items, expr, true)).toEqual([items[0], items[3]]);
 
-      var expr = 12;
+      expr = 12;
       expect(filter(items, expr, true)).toEqual([items[2]]);
     });
 
@@ -130,7 +152,7 @@ describe('Filter: filter', function() {
       var expr = {key: 10};
       var comparator = function (obj,value) {
         return obj > value;
-      }
+      };
       expect(filter(items, expr, comparator)).toEqual([items[2]]);
 
       expr = 10;

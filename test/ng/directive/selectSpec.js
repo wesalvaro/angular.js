@@ -218,7 +218,7 @@ describe('select', function() {
 
         it('should not break if both the select and repeater models change at once', function() {
           scope.robots = ['c3p0', 'r2d2'];
-          scope.robot = 'c3p0'
+          scope.robot = 'c3p0';
           compile('<select ng-model="robot">' +
                     '<option value="">--select--</option>' +
                     '<option ng-repeat="r in robots">{{r}}</option>' +
@@ -733,6 +733,27 @@ describe('select', function() {
       expect(sortedHtml(options[2])).toEqual('<option value="1">3</option>');
     });
 
+    it('should not update selected property of an option element on digest with no change event',
+        function() {
+      createSingleSelect();
+
+      scope.$apply(function() {
+        scope.values = [{name: 'A'}, {name: 'B'}, {name: 'C'}];
+        scope.selected = scope.values[0];
+      });
+
+      var options = element.find('option');
+      var optionToSelect = options.eq(1);
+
+      expect(optionToSelect.text()).toBe('B');
+
+      optionToSelect.prop('selected', true);
+      scope.$digest();
+
+      expect(optionToSelect.prop('selected')).toBe(true);
+      expect(scope.selected).toBe(scope.values[0]);
+    });
+
     describe('binding', function() {
 
       it('should bind to scope value', function() {
@@ -1185,7 +1206,7 @@ describe('select', function() {
 
       it('should deselect all options when model is emptied', function() {
         createMultiSelect();
-         scope.$apply(function() {
+        scope.$apply(function() {
           scope.values = [{name: 'A'}, {name: 'B'}];
           scope.selected = [scope.values[0]];
         });
@@ -1196,7 +1217,7 @@ describe('select', function() {
         });
 
         expect(element.find('option')[0].selected).toEqual(false);
-      })
+      });
     });
 
 
@@ -1304,7 +1325,7 @@ describe('select', function() {
     });
 
     it('should set value even if self closing HTML', function() {
-      scope.x = 'hello'
+      scope.x = 'hello';
       compile('<select ng-model="x"><option>hello</select>');
       expect(element).toEqualSelect(['hello']);
     });

@@ -3,10 +3,10 @@
 /* global
     angularModule: true,
     version: true,
-    
+
     $LocaleProvider,
     $CompileProvider,
-    
+
     htmlAnchorDirective,
     inputDirective,
     inputDirective,
@@ -46,6 +46,7 @@
     requiredDirective,
     requiredDirective,
     ngValueDirective,
+    ngModelOptionsDirective,
     ngAttributeAliasDirectives,
     ngEventDirectives,
 
@@ -72,13 +73,16 @@
     $SnifferProvider,
     $TemplateCacheProvider,
     $TimeoutProvider,
+    $$RAFProvider,
+    $$AsyncCallbackProvider,
     $WindowProvider
 */
 
 
 /**
- * @ngdoc property
+ * @ngdoc object
  * @name angular.version
+ * @module ng
  * @description
  * An object that contains information about the current AngularJS version. This object has the
  * following properties:
@@ -180,7 +184,8 @@ function publishExternalAPI(angular){
             ngChange: ngChangeDirective,
             required: requiredDirective,
             ngRequired: requiredDirective,
-            ngValue: ngValueDirective
+            ngValue: ngValueDirective,
+            ngModelOptions: ngModelOptionsDirective
         }).
         directive({
           ngInclude: ngIncludeFillContentDirective
@@ -210,7 +215,9 @@ function publishExternalAPI(angular){
         $sniffer: $SnifferProvider,
         $templateCache: $TemplateCacheProvider,
         $timeout: $TimeoutProvider,
-        $window: $WindowProvider
+        $window: $WindowProvider,
+        $$rAF: $$RAFProvider,
+        $$asyncCallback : $$AsyncCallbackProvider
       });
     }
   ]);

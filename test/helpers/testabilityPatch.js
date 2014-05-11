@@ -1,3 +1,4 @@
+/* global jQuery: true, uid: true */
 'use strict';
 
 /**
@@ -150,7 +151,7 @@ function sortedHtml(element, showNgClass) {
 
         var attr = attributes[i];
         if(attr.name.match(/^ng[\:\-]/) ||
-            (attr.value || attr.value == '') &&
+            (attr.value || attr.value === '') &&
             attr.value !='null' &&
             attr.value !='auto' &&
             attr.value !='false' &&
@@ -269,21 +270,27 @@ function provideLog($provide) {
 
       log.toString = function() {
         return messages.join('; ');
-      }
+      };
 
       log.toArray = function() {
         return messages;
-      }
+      };
 
       log.reset = function() {
         messages = [];
-      }
+      };
+
+      log.empty = function() {
+        var currentMessages = messages;
+        messages = [];
+        return currentMessages;
+      };
 
       log.fn = function(msg) {
         return function() {
           log(msg);
-        }
-      }
+        };
+      };
 
       log.$$log = true;
 
@@ -293,7 +300,7 @@ function provideLog($provide) {
 
 function pending() {
   dump('PENDING');
-};
+}
 
 function trace(name) {
   dump(new Error(name).stack);

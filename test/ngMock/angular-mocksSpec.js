@@ -52,16 +52,19 @@ describe('ngMock', function() {
 
 
     it('should fake getHours method', function() {
-      //0 in -3h
-      var t0 = new angular.mock.TzDate(-3, 0);
+      // avoid going negative due to #5017, so use Jan 2, 1970 00:00 UTC
+      var jan2 = 24 * 60 * 60 * 1000;
+
+      //0:00 in -3h
+      var t0 = new angular.mock.TzDate(-3, jan2);
       expect(t0.getHours()).toBe(3);
 
-      //0 in +0h
-      var t1 = new angular.mock.TzDate(0, 0);
+      //0:00 in +0h
+      var t1 = new angular.mock.TzDate(0, jan2);
       expect(t1.getHours()).toBe(0);
 
-      //0 in +3h
-      var t2 = new angular.mock.TzDate(3, 0);
+      //0:00 in +3h
+      var t2 = new angular.mock.TzDate(3, jan2);
       expect(t2.getHours()).toMatch(21);
     });
 
@@ -243,29 +246,29 @@ describe('ngMock', function() {
 
       it('should assertEmpty', function(){
         try {
-          $log.error(Error('MyError'));
-          $log.warn(Error('MyWarn'));
-          $log.info(Error('MyInfo'));
-          $log.log(Error('MyLog'));
-          $log.debug(Error('MyDebug'));
+          $log.error(new Error('MyError'));
+          $log.warn(new Error('MyWarn'));
+          $log.info(new Error('MyInfo'));
+          $log.log(new Error('MyLog'));
+          $log.debug(new Error('MyDebug'));
           $log.assertEmpty();
         } catch (error) {
-          error = error.message || error;
-          expect(error).toMatch(/Error: MyError/m);
-          expect(error).toMatch(/Error: MyWarn/m);
-          expect(error).toMatch(/Error: MyInfo/m);
-          expect(error).toMatch(/Error: MyLog/m);
-          expect(error).toMatch(/Error: MyDebug/m);
+          var err = error.message || error;
+          expect(err).toMatch(/Error: MyError/m);
+          expect(err).toMatch(/Error: MyWarn/m);
+          expect(err).toMatch(/Error: MyInfo/m);
+          expect(err).toMatch(/Error: MyLog/m);
+          expect(err).toMatch(/Error: MyDebug/m);
         } finally {
           $log.reset();
         }
       });
 
       it('should reset state', function(){
-        $log.error(Error('MyError'));
-        $log.warn(Error('MyWarn'));
-        $log.info(Error('MyInfo'));
-        $log.log(Error('MyLog'));
+        $log.error(new Error('MyError'));
+        $log.warn(new Error('MyWarn'));
+        $log.info(new Error('MyInfo'));
+        $log.log(new Error('MyLog'));
         $log.reset();
         var passed = false;
         try {
@@ -342,7 +345,7 @@ describe('ngMock', function() {
 
     it('should allow you to specify a number of iterations', inject(function($interval) {
       var counter = 0;
-      $interval(function() {counter++}, 1000, 2);
+      $interval(function() {counter++;}, 1000, 2);
 
       $interval.flush(1000);
       expect(counter).toBe(1);
@@ -403,7 +406,8 @@ describe('ngMock', function() {
       $interval.flush(1000);
 
       expect(log).toEqual([
-          'tick', 'promise update: 0', 'tick', 'promise update: 1', 'promise success: 2']);
+        'tick', 'promise update: 0', 'tick', 'promise update: 1', 'promise success: 2'
+      ]);
 
     }));
 
@@ -509,6 +513,11 @@ describe('ngMock', function() {
 
       it('should not throw a runtime exception when given an undefined promise',
           inject(function($interval) {
+        var task1 = jasmine.createSpy('task1'),
+            promise1;
+
+        promise1 = $interval(task1, 1000, 1);
+
         expect($interval.cancel()).toBe(false);
       }));
     });
@@ -522,7 +531,8 @@ describe('ngMock', function() {
       log = '';
     }));
 
-    function logFn(text){ return function() {
+    function logFn(text){
+      return function() {
         log += text +';';
       };
     }
@@ -601,7 +611,7 @@ describe('ngMock', function() {
     it('should expose flush method that will flush the pending queue of tasks', inject(
         function($timeout) {
       var logger = [],
-          logFn = function(msg) { return function() { logger.push(msg) }};
+          logFn = function(msg) { return function() { logger.push(msg); }; };
 
       $timeout(logFn('t1'));
       $timeout(logFn('t2'), 200);
@@ -684,6 +694,7 @@ describe('ngMock', function() {
     }));
 
     it('should serialize scope that has overridden "hasOwnProperty"', inject(function($rootScope, $sniffer){
+      /* jshint -W001 */
       // MS IE8 just doesn't work for this kind of thing, since "for ... in" doesn't return
       // things like hasOwnProperty even if it is explicitly defined on the actual object!
       if ($sniffer.msie<=8) return;
@@ -696,11 +707,11 @@ describe('ngMock', function() {
 
   describe('angular.mock.clearDataCache', function() {
     function keys(obj) {
-      var keys = [];
+      var keysArr = [];
       for(var key in obj) {
-        if (obj.hasOwnProperty(key)) keys.push(key);
+        if (obj.hasOwnProperty(key)) keysArr.push(key);
       }
-      return keys.sort();
+      return keysArr.sort();
     }
 
     function browserTrigger(element, eventType) {
@@ -732,11 +743,11 @@ describe('ngMock', function() {
       // crazy IE9 requires div to be connected to render DOM for click event to work
       // mousemove works even when not connected. This is a heisen-bug since stepping
       // through the code makes the test pass. Viva IE!!!
-      angular.element(document.body).append(div)
+      angular.element(document.body).append(div);
 
-      div.on('click', function() { log += 'click1;'});
-      div.on('click', function() { log += 'click2;'});
-      div.on('mousemove', function() { log += 'mousemove;'});
+      div.on('click', function() { log += 'click1;'; });
+      div.on('click', function() { log += 'click2;'; });
+      div.on('mousemove', function() { log += 'mousemove;'; });
 
       browserTrigger(div, 'click');
       browserTrigger(div, 'mousemove');
@@ -859,7 +870,26 @@ describe('ngMock', function() {
         }));
 
         afterEach(function() {
-          expect(log).toEqual('module;inject;')
+          expect(log).toEqual('module;inject;');
+        });
+      });
+
+
+      describe('this', function() {
+
+        it('should set `this` to be the jasmine context', inject(function() {
+          expect(this instanceof jasmine.Spec).toBe(true);
+        }));
+
+        it('should set `this` to be the jasmine context when inlined in a test', function() {
+          var tested = false;
+
+          inject(function() {
+            expect(this instanceof jasmine.Spec).toBe(true);
+            tested = true;
+          });
+
+          expect(tested).toBe(true);
         });
       });
 
@@ -899,6 +929,14 @@ describe('ngMock', function() {
       hb = $httpBackend;
     }));
 
+    it('should provide "expect" methods for each HTTP verb', function() {
+      expect(typeof hb.expectGET).toBe("function");
+      expect(typeof hb.expectPOST).toBe("function");
+      expect(typeof hb.expectPUT).toBe("function");
+      expect(typeof hb.expectPATCH).toBe("function");
+      expect(typeof hb.expectDELETE).toBe("function");
+      expect(typeof hb.expectHEAD).toBe("function");
+    });
 
     it('should respond with first matched definition', function() {
       hb.when('GET', '/url1').respond(200, 'content', {});
@@ -1041,29 +1079,29 @@ describe('ngMock', function() {
       hb.flush();
 
       expect(callback.callCount).toBe(2);
-      expect(callback.argsForCall[0]).toEqual([201, 'second', '']);
-      expect(callback.argsForCall[1]).toEqual([200, 'first', '']);
+      expect(callback.argsForCall[0]).toEqual([201, 'second', '', '']);
+      expect(callback.argsForCall[1]).toEqual([200, 'first', '', '']);
     });
 
 
     describe('respond()', function() {
       it('should take values', function() {
-        hb.expect('GET', '/url1').respond(200, 'first', {'header': 'val'});
+        hb.expect('GET', '/url1').respond(200, 'first', {'header': 'val'}, 'OK');
         hb('GET', '/url1', undefined, callback);
         hb.flush();
 
-        expect(callback).toHaveBeenCalledOnceWith(200, 'first', 'header: val');
+        expect(callback).toHaveBeenCalledOnceWith(200, 'first', 'header: val', 'OK');
       });
 
       it('should take function', function() {
-        hb.expect('GET', '/some').respond(function(m, u, d, h) {
-          return [301, m + u + ';' + d + ';a=' + h.a, {'Connection': 'keep-alive'}];
+        hb.expect('GET', '/some').respond(function (m, u, d, h) {
+          return [301, m + u + ';' + d + ';a=' + h.a, {'Connection': 'keep-alive'}, 'Moved Permanently'];
         });
 
         hb('GET', '/some', 'data', callback, {a: 'b'});
         hb.flush();
 
-        expect(callback).toHaveBeenCalledOnceWith(301, 'GET/some;data;a=b', 'Connection: keep-alive');
+        expect(callback).toHaveBeenCalledOnceWith(301, 'GET/some;data;a=b', 'Connection: keep-alive', 'Moved Permanently');
       });
 
       it('should default status code to 200', function() {
@@ -1092,8 +1130,8 @@ describe('ngMock', function() {
         hb.flush();
 
         expect(callback.callCount).toBe(2);
-        expect(callback.argsForCall[0]).toEqual([200, 'first', '']);
-        expect(callback.argsForCall[1]).toEqual([200, 'second', '']);
+        expect(callback.argsForCall[0]).toEqual([200, 'first', '', '']);
+        expect(callback.argsForCall[1]).toEqual([200, 'second', '', '']);
       });
     });
 
@@ -1388,7 +1426,7 @@ describe('ngMock', function() {
             hb[shortcut]('/foo').respond('bar');
             hb(method, '/foo', undefined, callback);
             hb.flush();
-            expect(callback).toHaveBeenCalledOnceWith(200, 'bar', '');
+            expect(callback).toHaveBeenCalledOnceWith(200, 'bar', '', '');
           });
         });
       });
@@ -1396,6 +1434,7 @@ describe('ngMock', function() {
 
 
     describe('MockHttpExpectation', function() {
+      /* global MockHttpExpectation */
 
       it('should accept url as regexp', function() {
         var exp = new MockHttpExpectation('GET', /^\/x/);
@@ -1404,6 +1443,17 @@ describe('ngMock', function() {
         expect(exp.match('GET', '/xxx/x')).toBe(true);
         expect(exp.match('GET', 'x')).toBe(false);
         expect(exp.match('GET', 'a/x')).toBe(false);
+      });
+
+
+      it('should accept url as function', function() {
+        var urlValidator = function(url) {
+          return url !== '/not-accepted';
+        };
+        var exp = new MockHttpExpectation('POST', urlValidator);
+
+        expect(exp.match('POST', '/url')).toBe(true);
+        expect(exp.match('POST', '/not-accepted')).toBe(false);
       });
 
 

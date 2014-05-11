@@ -1,12 +1,14 @@
 'use strict';
 
 /**
- * @ngdoc function
- * @name ng.filter:orderBy
+ * @ngdoc filter
+ * @name orderBy
  * @function
  *
  * @description
- * Orders a specified `array` by the `expression` predicate.
+ * Orders a specified `array` by the `expression` predicate. It is ordered alphabetically
+ * for strings and numerically for numbers. Note: if you notice numbers are not being sorted
+ * correctly, make sure they are actually being saved as numbers and not strings.
  *
  * @param {Array} array The array to sort.
  * @param {function(*)|string|Array.<(function(*)|string)>} expression A predicate to be
@@ -22,12 +24,12 @@
  *    - `Array`: An array of function or string predicates. The first predicate in the array
  *      is used for sorting, but when two items are equivalent, the next predicate is used.
  *
- * @param {boolean=} reverse Reverse the order the array.
+ * @param {boolean=} reverse Reverse the order of the array.
  * @returns {Array} Sorted copy of the source array.
  *
  * @example
-   <doc:example>
-     <doc:source>
+   <example>
+     <file name="index.html">
        <script>
          function Ctrl($scope) {
            $scope.friends =
@@ -57,31 +59,8 @@
            </tr>
          </table>
        </div>
-     </doc:source>
-     <doc:scenario>
-       it('should be reverse ordered by aged', function() {
-         expect(binding('predicate')).toBe('-age');
-         expect(repeater('table.friend', 'friend in friends').column('friend.age')).
-           toEqual(['35', '29', '21', '19', '10']);
-         expect(repeater('table.friend', 'friend in friends').column('friend.name')).
-           toEqual(['Adam', 'Julie', 'Mike', 'Mary', 'John']);
-       });
-
-       it('should reorder the table when user selects different predicate', function() {
-         element('.doc-example-live a:contains("Name")').click();
-         expect(repeater('table.friend', 'friend in friends').column('friend.name')).
-           toEqual(['Adam', 'John', 'Julie', 'Mary', 'Mike']);
-         expect(repeater('table.friend', 'friend in friends').column('friend.age')).
-           toEqual(['35', '10', '29', '19', '21']);
-
-         element('.doc-example-live a:contains("Phone")').click();
-         expect(repeater('table.friend', 'friend in friends').column('friend.phone')).
-           toEqual(['555-9876', '555-8765', '555-5678', '555-4321', '555-1212']);
-         expect(repeater('table.friend', 'friend in friends').column('friend.name')).
-           toEqual(['Mary', 'Julie', 'Adam', 'Mike', 'John']);
-       });
-     </doc:scenario>
-   </doc:example>
+     </file>
+   </example>
  */
 orderByFilter.$inject = ['$parse'];
 function orderByFilter($parse){
@@ -97,6 +76,12 @@ function orderByFilter($parse){
           predicate = predicate.substring(1);
         }
         get = $parse(predicate);
+        if (get.constant) {
+          var key = get();
+          return reverseComparator(function(a,b) {
+            return compare(a[key], b[key]);
+          }, descending);
+        }
       }
       return reverseComparator(function(a,b){
         return compare(get(a),get(b));

@@ -3,7 +3,7 @@
 /**
  * ! This is a private undocumented service !
  *
- * @name ng.$browser
+ * @name $browser
  * @requires $log
  * @description
  * This object has two goals:
@@ -87,8 +87,7 @@ function Browser(window, document, $log, $sniffer) {
       pollTimeout;
 
   /**
-   * @name ng.$browser#addPollFn
-   * @methodOf ng.$browser
+   * @name $browser#addPollFn
    *
    * @param {function()} fn Poll function to add
    *
@@ -128,8 +127,7 @@ function Browser(window, document, $log, $sniffer) {
       newLocation = null;
 
   /**
-   * @name ng.$browser#url
-   * @methodOf ng.$browser
+   * @name $browser#url
    *
    * @description
    * GETTER:
@@ -195,9 +193,7 @@ function Browser(window, document, $log, $sniffer) {
   }
 
   /**
-   * @name ng.$browser#onUrlChange
-   * @methodOf ng.$browser
-   * @TODO(vojta): refactor to use node's syntax for events
+   * @name $browser#onUrlChange
    *
    * @description
    * Register callback function that will be called, when url changes.
@@ -218,6 +214,7 @@ function Browser(window, document, $log, $sniffer) {
    * @return {function(string)} Returns the registered listener fn - handy if the fn is anonymous.
    */
   self.onUrlChange = function(callback) {
+    // TODO(vojta): refactor to use node's syntax for events
     if (!urlChangeInit) {
       // We listen on both (hashchange/popstate) when available, as some browsers (e.g. Opera)
       // don't fire popstate when user change the address bar and don't fire hashchange when url
@@ -242,14 +239,13 @@ function Browser(window, document, $log, $sniffer) {
   //////////////////////////////////////////////////////////////
 
   /**
-   * @name ng.$browser#baseHref
-   * @methodOf ng.$browser
+   * @name $browser#baseHref
    *
    * @description
    * Returns current <base href>
    * (always relative - without domain)
    *
-   * @returns {string=} current <base href>
+   * @returns {string} The current base href
    */
   self.baseHref = function() {
     var href = baseElement.attr('href');
@@ -264,8 +260,7 @@ function Browser(window, document, $log, $sniffer) {
   var cookiePath = self.baseHref();
 
   /**
-   * @name ng.$browser#cookies
-   * @methodOf ng.$browser
+   * @name $browser#cookies
    *
    * @param {string=} name Cookie name
    * @param {string=} value Cookie value
@@ -334,8 +329,7 @@ function Browser(window, document, $log, $sniffer) {
 
 
   /**
-   * @name ng.$browser#defer
-   * @methodOf ng.$browser
+   * @name $browser#defer
    * @param {function()} fn A function, who's execution should be deferred.
    * @param {number=} [delay=0] of milliseconds to defer the function execution.
    * @returns {*} DeferId that can be used to cancel the task via `$browser.defer.cancel()`.
@@ -361,8 +355,7 @@ function Browser(window, document, $log, $sniffer) {
 
 
   /**
-   * @name ng.$browser#defer.cancel
-   * @methodOf ng.$browser.defer
+   * @name $browser#defer.cancel
    *
    * @description
    * Cancels a deferred task identified with `deferId`.

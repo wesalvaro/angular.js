@@ -385,8 +385,8 @@ var swipeTests = function(description, restrictBrowsers, startEvent, moveEvent, 
       expect(events.end).not.toHaveBeenCalled();
     }));
   });
-}
+};
 
-swipeTests('touch', true  /* restrictBrowers */, 'touchstart', 'touchmove', 'touchend');
-swipeTests('mouse', false /* restrictBrowers */, 'mousedown',  'mousemove', 'mouseup');
+swipeTests('touch', /* restrictBrowers */ true, 'touchstart', 'touchmove', 'touchend');
+swipeTests('mouse', /* restrictBrowers */ false, 'mousedown',  'mousemove', 'mouseup');
 

@@ -1,20 +1,12 @@
-exports.config = {
-  allScriptsTimeout: 11000,
+var config = require('./protractor-shared-conf').config;
 
-  specs: [
-    'build/docs/ptore2e/**/*.js',
-    'test/e2e/docsAppE2E.js'
-  ],
+config.specs = [
+  'build/docs/ptore2e/**/*.js',
+  'test/e2e/docsAppE2E.js'
+];
 
-  capabilities: {
-    'browserName': 'chrome'
-  },
-
-  baseUrl: 'http://localhost:8000/build/docs/',
-
-  framework: 'jasmine',
-
-  jasmineNodeOpts: {
-    defaultTimeoutInterval: 30000
-  }
+config.capabilities = {
+  browserName: 'chrome',
 };
+
+exports.config = config;

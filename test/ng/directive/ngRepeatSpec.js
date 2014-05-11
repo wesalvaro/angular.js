@@ -79,6 +79,7 @@ describe('ngRepeat', function() {
   });
 
   it('should iterate over an array-like class', function() {
+    /* jshint -W009 */
     function Collection() {}
     Collection.prototype = new Array();
     Collection.prototype.length = 0;
@@ -395,10 +396,10 @@ describe('ngRepeat', function() {
 
 
   it("should throw error when left-hand-side of ngRepeat can't be parsed", function() {
-      element = jqLite('<ul><li ng-repeat="i dont parse in foo"></li></ul>');
-      $compile(element)(scope);
+    element = jqLite('<ul><li ng-repeat="i dont parse in foo"></li></ul>');
+    $compile(element)(scope);
     expect($exceptionHandler.errors.shift()[0].message).
-        toMatch(/^\[ngRepeat:iidexp\] '_item_' in '_item_ in _collection_' should be an identifier or '\(_key_, _value_\)' expression, but got 'i dont parse'\./);
+      toMatch(/^\[ngRepeat:iidexp\] '_item_' in '_item_ in _collection_' should be an identifier or '\(_key_, _value_\)' expression, but got 'i dont parse'\./);
   });
 
 
@@ -818,7 +819,7 @@ describe('ngRepeat', function() {
       expect(children[1].nextSibling.nodeValue).toBe(' end ngRepeat: val in values ');
       expect(children[2].nextSibling.nodeType).toBe(8);
       expect(children[2].nextSibling.nodeValue).toBe(' end ngRepeat: val in values ');
-    }
+    };
 
     $rootScope.values = [1, 2, 3];
 
@@ -893,7 +894,7 @@ describe('ngRepeat', function() {
     var extra = angular.element('<strong></strong>')[0];
     element[0].insertBefore(extra, ends[2]);
 
-    // move the third block to the begining
+    // move the third block to the beginning
     $rootScope.values.unshift($rootScope.values.pop());
     $rootScope.$digest();
 
@@ -1045,7 +1046,7 @@ describe('ngRepeat', function() {
       inject(function($compile, $rootScope) {
         element = $compile('<div><div ng-repeat="i in [1,2]" elm-trans>{{i}}</div></div>')($rootScope);
         $rootScope.$digest();
-        expect(element.text()).toBe('[[1]][[2]]')
+        expect(element.text()).toBe('[[1]][[2]]');
       });
     });
 
@@ -1143,13 +1144,13 @@ describe('ngRepeat and transcludes', function() {
 describe('ngRepeat animations', function() {
   var body, element, $rootElement;
 
-  function html(html) {
-    $rootElement.html(html);
+  function html(content) {
+    $rootElement.html(content);
     element = $rootElement.children().eq(0);
     return element;
   }
 
-  beforeEach(module('mock.animate'));
+  beforeEach(module('ngAnimateMock'));
 
   beforeEach(module(function() {
     // we need to run animation on attached elements;
@@ -1182,14 +1183,17 @@ describe('ngRepeat animations', function() {
     $rootScope.items = ['1','2','3'];
     $rootScope.$digest();
 
-    item = $animate.flushNext('enter').element;
-    expect(item.text()).toBe('1');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('1');
 
-    item = $animate.flushNext('enter').element;
-    expect(item.text()).toBe('2');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('2');
 
-    item = $animate.flushNext('enter').element;
-    expect(item.text()).toBe('3');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('3');
   }));
 
   it('should fire off the leave animation',
@@ -1207,20 +1211,24 @@ describe('ngRepeat animations', function() {
     $rootScope.items = ['1','2','3'];
     $rootScope.$digest();
 
-    item = $animate.flushNext('enter').element;
-    expect(item.text()).toBe('1');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('1');
 
-    item = $animate.flushNext('enter').element;
-    expect(item.text()).toBe('2');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('2');
 
-    item = $animate.flushNext('enter').element;
-    expect(item.text()).toBe('3');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('enter');
+    expect(item.element.text()).toBe('3');
 
     $rootScope.items = ['1','3'];
     $rootScope.$digest();
 
-    item = $animate.flushNext('leave').element;
-    expect(item.text()).toBe('2');
+    item = $animate.queue.shift();
+    expect(item.event).toBe('leave');
+    expect(item.element.text()).toBe('2');
   }));
 
   it('should fire off the move animation',
@@ -1239,23 +1247,29 @@ describe('ngRepeat animations', function() {
       $rootScope.items = ['1','2','3'];
       $rootScope.$digest();
 
-      item = $animate.flushNext('enter').element;
-      expect(item.text()).toBe('1');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
+      expect(item.element.text()).toBe('1');
 
-      item = $animate.flushNext('enter').element;
-      expect(item.text()).toBe('2');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
+      expect(item.element.text()).toBe('2');
 
-      item = $animate.flushNext('enter').element;
-      expect(item.text()).toBe('3');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('enter');
+      expect(item.element.text()).toBe('3');
 
       $rootScope.items = ['2','3','1'];
       $rootScope.$digest();
 
-      item = $animate.flushNext('move').element;
-      expect(item.text()).toBe('2');
+      item = $animate.queue.shift();
+      expect(item.event).toBe('move');
+      expect(item.element.text()).toBe('2');
 
-      item = $animate.flushNext('move').element;
-      expect(item.text()).toBe('1');
-  }));
+      item = $animate.queue.shift();
+      expect(item.event).toBe('move');
+      expect(item.element.text()).toBe('3');
+    })
+  );
 
 });
